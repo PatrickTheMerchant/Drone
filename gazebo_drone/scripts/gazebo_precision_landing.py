@@ -85,7 +85,7 @@ def arm_and_takeoff(targetHeight):
     return None
 
 ##Send velocity command to drone
-def send_local_ned_velocity(vx,vy,vz):
+def send_local_ned_velocity(vx,vy,vz,duration=0):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,
         0,
@@ -101,6 +101,30 @@ def send_local_ned_velocity(vx,vy,vz):
         0,0,0,0,0)
     vehicle.send_mavlink(msg)
     vehicle.flush()
+    for x in range(0,duration):
+	vehicle.send_mavlink(msg)
+	time.sleep(1)
+
+def send_body_ned_velocity(vx,vy,vz,duration=0):
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,
+        0,
+        0,
+        mavutil.mavlink.MAV_FRAME_BODY_OFFSET_NED,
+        0b0000111111000111,
+        0,
+        0,
+        0,
+        vx,
+        vy,
+        vz,
+        0,0,0,0,0)
+    vehicle.send_mavlink(msg)
+    vehicle.flush()
+    for x in range(0,duration):
+	vehicle.send_mavlink(msg)
+	subscriber()
+	time.sleep(1)
 
 
 def send_land_message(x,y):
@@ -129,7 +153,7 @@ def msg_receiver(message):
 
         ids = ''
         (corners, ids, rejected) = aruco.detectMarkers(image=gray_img,dictionary=aruco_dict,parameters=parameters)
-
+	#print(ids + 'lol')
         try:
             if ids is not None:
                 if ids[0]==id_to_find:
@@ -184,10 +208,6 @@ def msg_receiver(message):
 		    #	vehicle.simple_goto(a_location)
 
 
-
-
-
-
                     marker_position = 'MARKER POSITION: x='+x+' y='+y+' z='+z
 
                     aruco.drawDetectedMarkers(np_data,corners)
@@ -223,30 +243,30 @@ if __name__=='__main__':
     try:
         arm_and_takeoff(takeoff_height)
         time.sleep(1)
-        send_local_ned_velocity(0,velocity,0)
+        send_local_ned_velocity(0,velocity,0,20)
+	time.sleep(10)
+	print('start search')
 	ptime = 1;
 	count = 0;
 	direction = 0;
 	while direction <= 3:
 	    if direction == 0:
-		send_local_ned_velocity(velocity,0,0)
-		time.sleep(ptime)
+		send_body_ned_velocity(velocity,0,0,ptime)
+		direction+=1
 	    elif direction == 1:
-		send_local_ned_velocity(0,velocity,0)
-		time.sleep(ptime)
+		send_body_ned_velocity(0,velocity,0,ptime)
+		direction+=1
 	    elif direction == 2:
-	        send_local_ned_velocity(-velocity,0,0)
-		time.sleep(ptime)
+	        send_body_ned_velocity(-velocity,0,0,ptime)
+		direction+=1
 	    else:
-		send_local_ned_velocity(0,-velocity,0)
-		time.sleep(ptime)
-		direction = 0
+		send_body_ned_velocity(0,-velocity,0,ptime)
+		direction=0
 	    if count == 2:
 		ptime+=1
+		count=0
 	    count+=1
-	    direction+=1
-	   
-        time.sleep(10)
-        subscriber()
+	     
+        #subscriber()
     except rospy.ROSInterruptException:
         pass
