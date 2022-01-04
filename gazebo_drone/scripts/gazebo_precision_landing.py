@@ -123,7 +123,12 @@ def send_body_ned_velocity(vx,vy,vz,duration=0):
     vehicle.flush()
     for x in range(0,duration):
 	vehicle.send_mavlink(msg)
-	subscriber()
+	np_data = rnp.numpify('/camera/color/image_raw') ##Deserialize image data into array
+        gray_img = cv2.cvtColor(np_data, cv2.COLOR_BGR2GRAY)
+        ids = ''
+        (corners, ids, rejected) = aruco.detectMarkers(image=gray_img,dictionary=aruco_dict,parameters=parameters)
+	if ids[0]==id_to_find:
+	    subscriber()
 	time.sleep(1)
 
 
