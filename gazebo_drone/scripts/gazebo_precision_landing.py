@@ -43,6 +43,7 @@ vertical_fov = 48.8 * (math.pi / 180) ##48.8 for V2, 41.41 for V1
 found_count=0
 notfound_count=0
 
+foundBool = False
 #############CAMERA INTRINSICS#######
 
 dist_coeff = [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -123,12 +124,12 @@ def send_body_ned_velocity(vx,vy,vz,duration=0):
     vehicle.flush()
     for x in range(0,duration):
 	vehicle.send_mavlink(msg)
-	np_data = rnp.numpify('/camera/color/image_raw') ##Deserialize image data into array
-        gray_img = cv2.cvtColor(np_data, cv2.COLOR_BGR2GRAY)
-        ids = ''
-        (corners, ids, rejected) = aruco.detectMarkers(image=gray_img,dictionary=aruco_dict,parameters=parameters)
-	if ids[0]==id_to_find:
-	    subscriber()
+	#np_data = np.numpify('/camera/color/image_raw') ##Deserialize image data into array
+        #gray_img = cv2.cvtColor(np_data, cv2.COLOR_BGR2GRAY)
+        #ids = ''
+        #(corners, ids, rejected) = aruco.detectMarkers(image=gray_img,dictionary=aruco_dict,parameters=parameters)
+	#if ids[0]==id_to_find:
+	subscriber()
 	time.sleep(1)
 
 
@@ -223,10 +224,15 @@ def msg_receiver(message):
                     print('FOUND COUNT: '+str(found_count)+ ' NOTFOUND COUNT: '+str(notfound_count))
 
                     found_count = found_count + 1
+		    foundBool = True
                 else:
                     notfound_count=notfound_count+1
+		    print('not found 1')
+		    foundBool = False
             else:
                 notfound_count=notfound_count+1
+	        print('not found 2')
+		foundBool = False
         except Exception as e:
             print('Target likely not found')
             print(e)
@@ -241,14 +247,15 @@ def msg_receiver(message):
 def subscriber():
     rospy.init_node('drone_node',anonymous=False)
     sub = rospy.Subscriber('/camera/color/image_raw', Image, msg_receiver)
-    rospy.spin()
+    if foundBool:
+        rospy.spin()
 
 
 if __name__=='__main__':
     try:
         arm_and_takeoff(takeoff_height)
         time.sleep(1)
-        send_local_ned_velocity(0,velocity,0,20)
+        send_local_ned_velocity(0,velocity,0,15)
 	time.sleep(10)
 	print('start search')
 	ptime = 1;
@@ -268,7 +275,7 @@ if __name__=='__main__':
 		send_body_ned_velocity(0,-velocity,0,ptime)
 		direction=0
 	    if count == 2:
-		ptime+=1
+		ptime+=3
 		count=0
 	    count+=1
 	     
