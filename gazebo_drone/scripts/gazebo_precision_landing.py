@@ -202,17 +202,6 @@ def msg_receiver(message):
                             send_land_message(vehicle.location.global_relative_frame.alt)
                         else:
                             send_land_message(vehicle.location.global_relative_frame.alt)
-		    #if vehicle.mode !='GUIDED':
-                    #    vehicle.mode = VehicleMode('GUIDED')
-                    #    while vehicle.mode !='GUIDED':
-                    #        time.sleep(1)
-                    #    print('Vehicle in GUIDED mode')
-                    #    a_location = LocationGlobalRelative(0, 0, 10)
-		    #	vehicle.simple_goto(a_location)
-                    #else:
-                    #    a_location = LocationGlobalRelative(0, 0, 10)
-		    #	vehicle.simple_goto(a_location)
-
 
                     marker_position = 'MARKER POSITION: x='+x+' y='+y+' z='+z
 
@@ -255,10 +244,11 @@ if __name__=='__main__':
     try:
         arm_and_takeoff(takeoff_height)
         time.sleep(1)
-        send_local_ned_velocity(0,velocity,0,15)
+        send_local_ned_velocity(0,velocity,0,10)
 	time.sleep(10)
 	print('start search')
-	ptime = 1;
+
+	ptime = 3;
 	count = 0;
 	direction = 0;
 	while direction <= 3:
@@ -274,7 +264,7 @@ if __name__=='__main__':
 	    else:
 		send_body_ned_velocity(0,-velocity,0,ptime)
 		direction=0
-	    if count == 2:
+	    if count == 1:
 		ptime+=3
 		count=0
 	    count+=1
