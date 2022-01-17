@@ -86,7 +86,7 @@ def arm_and_takeoff(targetHeight):
     return None
 
 ##Send velocity command to drone
-def send_local_ned_velocity(vx,vy,vz,duration=0):
+def send_local_ned_velocity(vx=0,vy=0,vz=0,duration=0):
     msg = vehicle.message_factory.set_position_target_local_ned_encode(
         0,
         0,
@@ -192,16 +192,15 @@ def msg_receiver(message):
                             send_land_message(x_ang,y_ang)
                     
 		    else:
-			print "setting throttle to 1500 via override"
-			vehicle.channels.overrides['3'] = 1500
-			if vehicle.mode !='LOITER':
-			    vehicle.mode = VehicleMode('LOITER')
-			    while vehicle.mode !='LOITER':
-                                time.sleep(1)
-                            print('Vehicle in LOITER mode')
-                            send_land_message(vehicle.location.global_relative_frame.alt)
-                        else:
-                            send_land_message(vehicle.location.global_relative_frame.alt)
+			#print "setting throttle to 1500 via override"
+			#vehicle.channels.overrides['3'] = 1500
+			
+			vehicle.mode = VehicleMode('GUIDED')
+			while vehicle.mode !='GUIDED':
+                            time.sleep(1)
+                        print('Vehicle in GUIDED mode')
+			send_local_ned_velocity(0, 0, 0, 1)
+
 
                     marker_position = 'MARKER POSITION: x='+x+' y='+y+' z='+z
 
@@ -242,9 +241,10 @@ def subscriber():
 
 if __name__=='__main__':
     try:
+	print(sys.argv)
         arm_and_takeoff(takeoff_height)
         time.sleep(1)
-        send_local_ned_velocity(0,velocity,0,10)
+        send_local_ned_velocity(int(sys.argv[1]),int(sys.argv[2]),0,int(sys.argv[3]))
 	time.sleep(10)
 	print('start search')
 
