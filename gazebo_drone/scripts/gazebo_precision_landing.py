@@ -192,15 +192,14 @@ def msg_receiver(message):
                             send_land_message(x_ang,y_ang)
                     
 		    else:
-			#print "setting throttle to 1500 via override"
-			#vehicle.channels.overrides['3'] = 1500
+			print "setting throttle to 1500 via override"
+			vehicle.channels.overrides['3'] = 1500
 			
-			vehicle.mode = VehicleMode('GUIDED')
-			while vehicle.mode !='GUIDED':
+			vehicle.mode = VehicleMode('LOITER')
+			while vehicle.mode !='LOITER':
                             time.sleep(1)
-                        print('Vehicle in GUIDED mode')
-			send_local_ned_velocity(0, 0, 0, 1)
-
+                        print('Vehicle in LOITER mode')
+			#send_local_ned_velocity(0, 0, 0, 1)
 
                     marker_position = 'MARKER POSITION: x='+x+' y='+y+' z='+z
 
@@ -241,11 +240,11 @@ def subscriber():
 
 if __name__=='__main__':
     try:
-	print(sys.argv)
-        arm_and_takeoff(takeoff_height)
-        time.sleep(1)
-        send_local_ned_velocity(int(sys.argv[1]),int(sys.argv[2]),0,int(sys.argv[3]))
-	time.sleep(10)
+	#print(sys.argv)
+        #arm_and_takeoff(takeoff_height)
+        #time.sleep(1)
+        #send_local_ned_velocity(int(sys.argv[1]),int(sys.argv[2]),0,int(sys.argv[3]))
+	#time.sleep(10)
 	print('start search')
 
 	ptime = 3;
